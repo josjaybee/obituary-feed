@@ -1,0 +1,18 @@
+{
+  "name": "Manitoba Obituaries",
+  "short_name": "MB Obits",
+  "description": "Searchable Manitoba obituary directory aggregated from funeral homes and newspapers.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f8",
+  "theme_color": "#1e3a5f",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

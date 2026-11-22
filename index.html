@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1e3a5f" />
+  <meta name="description" content="Searchable Manitoba obituary directory aggregated from funeral homes and newspapers." />
+  <title>Manitoba Obituaries</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <style>
+    :root {
+      --bg: #f3f5f8;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --primary: #1e3a5f;
+      --primary-hover: #162c49;
+      --accent: #2b6cb0;
+      --text: #1a202c;
+      --muted: #5a6577;
+      --border: #dce3ec;
+      --badge-bg: #e8eff7;
+      --badge-text: #1e3a5f;
+      --shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      background: var(--primary);
+      color: #ffffff;
+      padding: 16px 16px 18px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button.icon-btn {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button.icon-btn:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    #installBtn {
+      display: none;
+      background: #ffffff;
+      color: var(--primary);
+      border-color: #ffffff;
+    }
+
+    .search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 12px 40px 12px 14px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    #clearSearch {
+      position: absolute;
+      right: 8px;
+      background: #e2e8f0;
+      border: none;
+      color: #334155;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 14px 48px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 680px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+
+    .offline-pill {
+      display: none;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #f59e0b;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .person-name {
+      margin: 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .badge {
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .sources-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 4px;
+      border-top: 1px solid #eef2f6;
+    }
+
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .source-link:hover {
+      background: #ebf3fc;
+      border-color: var(--accent);
+    }
+
+    .load-more-wrap {
+      margin-top: 18px;
+      text-align: center;
+    }
+
+    #loadMoreBtn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #loadMoreBtn:hover {
+      background: var(--primary-hover);
+    }
+
+    .empty-state {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="title-row">
+        <h1>Manitoba Obituaries</h1>
+        <div class="header-actions">
+          <button id="installBtn" class="icon-btn" type="button">Install App</button>
+          <button id="refreshBtn" class="icon-btn" type="button" title="Fetch latest JSON feed">Refresh</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search by name, community, or funeral home..."
+          autocomplete="off"
+        />
+        <button id="clearSearch" type="button" aria-label="Clear search">&times;</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="controls">
+      <select id="cityFilter" aria-label="Filter by community">
+        <option value="">All Communities</option>
+      </select>
+      <select id="sourceFilter" aria-label="Filter by source">
+        <option value="">All Funeral Homes &amp; Papers</option>
+      </select>
+      <select id="sortSelect" aria-label="Sort order">
+        <option value="recent">Newest Listed First</option>
+        <option value="dod">Date of Death (Newest)</option>
+        <option value="az">Name (A &ndash; Z)</option>
+      </select>
+    </div>
+
+    <div class="status-bar">
+      <span id="resultCount">Loading records...</span>
+      <div>
+        <span id="offlineBadge" class="offline-pill">Offline / Cached</span>
+        <span id="lastUpdated"></span>
+      </div>
+    </div>
+
+    <div id="cardsContainer" class="cards"></div>
+
+    <div class="load-more-wrap">
+      <button id="loadMoreBtn" type="button" style="display:none;">Show More</button>
+    </div>
+  </main>
+
+  <script>
+    const FEED_URL = "./obituaries_manitoba.json";
+    const STORAGE_DATA_KEY = "mb_obits_data_v1";
+    const STORAGE_TIME_KEY = "mb_obits_updated_v1";
+    const PAGE_SIZE = 50;
+
+    let allRecords = [];
+    let filteredRecords = [];
+    let visibleCount = PAGE_SIZE;
+    let deferredInstallPrompt = null;
+
+    const searchInput = document.getElementById("searchInput");
+    const clearSearch = document.getElementById("clearSearch");
+    const cityFilter = document.getElementById("cityFilter");
+    const sourceFilter = document.getElementById("sourceFilter");
+    const sortSelect = document.getElementById("sortSelect");
+    const cardsContainer = document.getElementById("cardsContainer");
+    const resultCount = document.getElementById("resultCount");
+    const lastUpdated = document.getElementById("lastUpdated");
+    const offlineBadge = document.getElementById("offlineBadge");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const installBtn = document.getElementById("installBtn");
+
+    function normalizeRecords(raw) {
+      if (Array.isArray(raw)) return raw;
+      if (raw && Array.isArray(raw.records)) return raw.records;
+      if (raw && Array.isArray(raw.obituaries)) return raw.obituaries;
+      if (raw && typeof raw === "object") return Object.values(raw);
+      return [];
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return null;
+      const clean = String(dateStr).split(" ")[0];
+      const parts = clean.split("-");
+      if (parts.length === 3) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString("en-CA", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          });
+        }
+      }
+      return clean;
+    }
+
+    function populateFilters(records) {
+      const currentCity = cityFilter.value;
+      const currentSource = sourceFilter.value;
+
+      const cities = new Set();
+      const sources = new Set();
+
+      records.forEach((rec) => {
+        if (rec.city_or_region && rec.city_or_region.trim()) {
+          cities.add(rec.city_or_region.trim());
+        }
+        if (Array.isArray(rec.sources)) {
+          rec.sources.forEach((s) => {
+            if (s && s.source_name && s.source_name.trim()) {
+              sources.add(s.source_name.trim());
+            }
+          });
+        }
+      });
+
+      cityFilter.innerHTML = '<option value="">All Communities</option>';
+      Array.from(cities)
+        .sort((a, b) => a.localeCompare(b))
+        .forEach((city) => {
+          const opt = document.createElement("option");
+          opt.value = city;
+          opt.textContent = city;
+          cityFilter.appendChild(opt);
+        });
+
+      sourceFilter.innerHTML = '<option value="">All Funeral Homes & Papers</option>';
+      Array.from(sources)
+        .sort((a, b) => a.localeCompare(b))
+        .forEach((src) => {
+          const opt = document.createElement("option");
+          opt.value = src;
+          opt.textContent = src;
+          sourceFilter.appendChild(opt);
+        });
+
+      cityFilter.value = currentCity;
+      sourceFilter.value = currentSource;
+    }
+
+    function applyFiltersAndRender(resetLimit = true) {
+      if (resetLimit) visibleCount = PAGE_SIZE;
+
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedCity = cityFilter.value;
+      const selectedSource = sourceFilter.value;
+      const sortBy = sortSelect.value;
+
+      clearSearch.style.display = query ? "block" : "none";
+
+      filteredRecords = allRecords.filter((rec) => {
+        if (selectedCity && (rec.city_or_region || "").trim() !== selectedCity) {
+          return false;
+        }
+        if (selectedSource) {
+          const hasSource =
+            Array.isArray(rec.sources) &&
+            rec.sources.some((s) => (s.source_name || "").trim() === selectedSource);
+          if (!hasSource) return false;
+        }
+        if (query) {
+          const name = (rec.name || "").toLowerCase();
+          const city = (rec.city_or_region || "").toLowerCase();
+          const sourceText = Array.isArray(rec.sources)
+            ? rec.sources.map((s) => s.source_name || "").join(" ").toLowerCase()
+            : "";
+          if (!name.includes(query) && !city.includes(query) && !sourceText.includes(query)) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+      filteredRecords.sort((a, b) => {
+        if (sortBy === "az") {
+          return (a.name || "").localeCompare(b.name || "");
+        }
+        if (sortBy === "dod") {
+          const da = a.date_of_death || "";
+          const db = b.date_of_death || "";
+          if (db !== da) return db.localeCompare(da);
+        }
+        const sa = a.last_seen || a.first_seen || "";
+        const sb = b.last_seen || b.first_seen || "";
+        return sb.localeCompare(sa);
+      });
+
+      renderCards();
+    }
+
+    function renderCards() {
+      const total = filteredRecords.length;
+      resultCount.textContent = `Showing ${Math.min(visibleCount, total)} of ${total} obituaries`;
+
+      if (total === 0) {
+        cardsContainer.innerHTML =
+          '<div class="empty-state">No obituaries match your current search or filter.</div>';
+        loadMoreBtn.style.display = "none";
+        return;
+      }
+
+      const slice = filteredRecords.slice(0, visibleCount);
+      const html = slice
+        .map((rec) => {
+          const name = escapeHtml(rec.name || "Unknown");
+          const city = rec.city_or_region ? escapeHtml(rec.city_or_region) : "";
+          const dod = formatDate(rec.date_of_death);
+          const firstSeen = formatDate(rec.first_seen);
+
+          const sourceLinks = [];
+          if (Array.isArray(rec.sources) && rec.sources.length > 0) {
+            rec.sources.forEach((src) => {
+              if (src && src.obituary_url) {
+                const label = escapeHtml(src.source_name || "View Obituary");
+                const url = escapeHtml(src.obituary_url);
+                sourceLinks.push(
+                  `<a class="source-link" href="${url}" target="_blank" rel="noopener noreferrer">${label} &#8599;</a>`
+                );
+              }
+            });
+          } else if (rec.primary_url) {
+            sourceLinks.push(
+              `<a class="source-link" href="${escapeHtml(rec.primary_url)}" target="_blank" rel="noopener noreferrer">Read Notice &#8599;</a>`
+            );
+          }
+
+          return `
+            <article class="card">
+              <div class="card-top">
+                <h2 class="person-name">${name}</h2>
+                ${city ? `<span class="badge">${city}</span>` : ""}
+              </div>
+              <div class="meta-row">
+                ${dod ? `<span><strong>Passed:</strong> ${escapeHtml(dod)}</span>` : ""}
+                ${firstSeen ? `<span><strong>Listed:</strong> ${escapeHtml(firstSeen)}</span>` : ""}
+              </div>
+              <div class="sources-list">
+                ${sourceLinks.join("")}
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+
+      cardsContainer.innerHTML = html;
+      loadMoreBtn.style.display = visibleCount < total ? "inline-block" : "none";
+    }
+
+    function updateTimestampDisplay(isoString) {
+      if (!isoString) return;
+      const d = new Date(isoString);
+      if (!isNaN(d.getTime())) {
+        lastUpdated.textContent = `Updated ${d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        })}`;
+      }
+    }
+
+    async function loadFeed(forceNetwork = false) {
+      const cachedRaw = localStorage.getItem(STORAGE_DATA_KEY);
+      if (cachedRaw && !forceNetwork) {
+        try {
+          allRecords = normalizeRecords(JSON.parse(cachedRaw));
+          populateFilters(allRecords);
+          applyFiltersAndRender(true);
+          updateTimestampDisplay(localStorage.getItem(STORAGE_TIME_KEY));
+        } catch (e) {
+          console.warn("Cache parse failed", e);
+        }
+      }
+
+      try {
+        refreshBtn.textContent = "Syncing...";
+        const url = forceNetwork ? `${FEED_URL}?t=${Date.now()}` : FEED_URL;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        const records = normalizeRecords(json);
+
+        allRecords = records;
+        const nowIso = new Date().toISOString();
+        localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify(records));
+        localStorage.setItem(STORAGE_TIME_KEY, nowIso);
+
+        offlineBadge.style.display = "none";
+        updateTimestampDisplay(nowIso);
+        populateFilters(allRecords);
+        applyFiltersAndRender(true);
+      } catch (err) {
+        console.warn("Using cached feed:", err);
+        if (allRecords.length > 0) {
+          offlineBadge.style.display = "inline-block";
+        } else {
+          resultCount.textContent = "Unable to load feed. Check your internet connection.";
+        }
+      } finally {
+        refreshBtn.textContent = "Refresh";
+      }
+    }
+
+    searchInput.addEventListener("input", () => applyFiltersAndRender(true));
+    clearSearch.addEventListener("click", () => {
+      searchInput.value = "";
+      applyFiltersAndRender(true);
+      searchInput.focus();
+    });
+    cityFilter.addEventListener("change", () => applyFiltersAndRender(true));
+    sourceFilter.addEventListener("change", () => applyFiltersAndRender(true));
+    sortSelect.addEventListener("change", () => applyFiltersAndRender(true));
+    loadMoreBtn.addEventListener("click", () => {
+      visibleCount += PAGE_SIZE;
+      renderCards();
+    });
+    refreshBtn.addEventListener("click", () => loadFeed(true));
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      installBtn.style.display = "inline-flex";
+    });
+
+    installBtn.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      installBtn.style.display = "none";
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((err) => {
+          console.warn("Service worker registration failed:", err);
+        });
+      });
+    }
+
+    loadFeed(false);
+  </script>
+</body>
+</html>
